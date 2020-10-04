@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自己实现</title>
+  <style>
+    div {
+      background-color: gray;
+      display: inline-block;
+      margin: 30px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50px;
+    }
+
+    .green.light {
+      background-color: green;
+    }
+
+    .yellow.light {
+      background-color: yellow;
+    }
+
+    .red.light {
+      background-color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="green"></div>
+  <div class="yellow"></div>
+  <div class="red"></div>
+</body>
+
+</html>
+
+
+
+<script>
+
+  function showLight(color, time) {
+    document.getElementsByClassName(color)[0].classList.add("light");
+    return new Promise((reslove, reject) => {
+      let timer = setTimeout(() => {
+        document.getElementsByClassName(color)[0].classList.remove("light");
+        clearInterval(timer);
+        reslove();
+      }, time * 1000);
+    })
+  }
+
+  function exec() {
+    showLight('green', 10).then(() => {
+      return showLight('yellow', 2);
+    }).then(() => {
+      return showLight('red', 5)
+    }).then(() => {
+      exec()
+    })
+  }
+
+  exec()
+</script>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tic-tac-toe</title>
+
+  <style>
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: green;
+      border: solid 1px #fff;
+
+      display: inline-block;
+      line-height: 100px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="borad"></div>
+</body>
+
+<script>
+  let current = 1;
+
+  let over = false;
+
+  // 棋盘格
+  let pattern = [
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0
+  ];
+
+  // 画棋盘
+  function show(pattern) {
+    let borad = document.getElementById('borad');
+    borad.innerHTML = '';
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let cell = document.createElement('div');
+        cell.classList.add('cell')
+        cell.innerText = pattern[i * 3 + j] == 2 ? '❌' :
+          pattern[i * 3 + j] == 1 ? '⭕️' : '';
+        cell.addEventListener('click', () => userMove(j, i));
+        borad.appendChild(cell);
+      }
+      borad.appendChild(document.createElement('br'));
+    }
+  }
+
+  // 落子
+  function userMove(x, y) {
+    // 游戏已经结束
+    if(over) {
+      return;
+    }
+
+    // 该处已有棋子
+    if(pattern[y * 3 + x] !== 0) {
+      return;
+    }
+    pattern[y * 3 + x] = current;
+    if (check(pattern, current)) {
+      over = true;
+      alert(current == 2 ? '❌ win!' : '⭕️ win!');
+    }
+    current = 3 - current;
+    show(pattern);
+    computerMove();
+  }
+
+  function computerMove() {
+    let choice = bestChoice(pattern, current);
+    if (choice.point) {
+      pattern[choice.point[1] * 3 + choice.point[0]] = current;
+    }
+
+    if (check(pattern, current)) {
+      over = true;
+      alert(current == 2 ? '❌ win!' : '⭕️ win!');
+    }
+
+    current = 3 - current;
+    show(pattern);
+  }
+
+  // 如何赢
+  function check(pattern, current) {
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== current) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + i] !== current) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + j] !== current) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + 2 - j] !== current) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function clone(pattern) {
+    return Object.create(pattern);
+  }
+
+  // AI 判断对方要赢了
+  function willWin(pattern, current) {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== 0)
+          continue;
+
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = current;
+
+        if (check(tmp, current)) {
+          return [j, i];
+        }
+      }
+    }
+    return null;
+  }
+
+  function bestChoice(pattern, current) {
+    let point = willWin(pattern, current);
+    if (point) {
+      return {
+        point,
+        result: 1
+      }
+    }
+
+    let result = -1;
+    outer: for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== 0)
+          continue;
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = current;
+        let opp = bestChoice(tmp, 3 - current);
+
+        if (-opp.result >= result) {
+          result = -opp.result;
+          point = [j, i];
+        }
+
+        if (result == 1) {
+          break outer;
+        }
+      }
+    }
+
+    return {
+      point,
+      result: point ? result : 0
+    }
+  }
+
+  show(pattern)
+</script>
+
+</html>

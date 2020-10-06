@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: green;
+      border: solid 1px #fff;
+
+      display: inline-block;
+      text-align: center;
+      line-height: 100px;
+      vertical-align: middle;
+      font-size: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="board"></div>
+</body>
+
+<script>
+  // 棋盘
+  let pattern = [
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0
+  ]
+
+  // 下一个要落子的一方
+  let color = 1;
+
+  let over = false;
+
+  // 画棋盘
+  function show() {
+    let board = document.getElementById("board");
+    board.innerHTML = "";
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        // 创建节点
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerText = pattern[i * 3 + j] === 2 ? "❌" : pattern[i * 3 + j] === 1 ? "⭕️" : "";
+
+        // 添加点击事件
+        cell.addEventListener("click", () => userMove(i, j));
+
+        // 添加节点
+        board.appendChild(cell);
+      }
+      // 折行
+      board.appendChild(document.createElement("br"));
+    }
+
+  }
+
+  // 点击事件，下棋
+  function userMove(i, j) {
+    // 游戏结束
+    if (over) {
+      return;
+    }
+
+    // 该处已有棋子
+    if (pattern[i * 3 + j] !== 0) {
+      return;
+    }
+
+    // 落子
+    pattern[i * 3 + j] = color;
+
+    // 检查是否要赢了
+    if (check(pattern, color)) {
+      over = true;
+      console.log(color === '2' ? "❌ win!" : "⭕️ win!");
+    }
+
+    // 切换对方棋子
+    color = 3 - color;
+
+    // 重新渲染
+    show();
+
+    // AI 落子
+    computerMove();
+  }
+
+  function computerMove() {
+    // 拿到最优解
+    let choice = bestChoice(pattern, color);
+    if(choice.point) {
+      pattern[choice.point[1] * 3 + choice.point[0]] = color;
+    }
+
+    if (check(pattern, color)) {
+      over = true;
+      console.log(color === '2' ? "❌ win!" : "⭕️ win!");
+    }
+
+    color = 3 - color;
+    show();
+  }
+
+  function clone(pattern) {
+    return Object.create(pattern);
+  }
+
+  // 判断输赢
+  function check(pattern, color) {
+    // 横 赢法
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== color) {
+          win = false
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    // 竖 赢法
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j * 3 + i] !== color) {
+          win = false
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    // 左斜 赢法
+    {
+      let win = true;
+      for (let i = 0; i < 3; i++) {
+        if (pattern[i * 2 + 2] !== color) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+
+    // 右斜 赢法
+    {
+      let win = true;
+      for (let i = 0; i < 3; i++) {
+        if (pattern[i * 3 + i] !== color) {
+          win = false;
+        }
+      }
+      if (win) {
+        return true;
+      }
+    }
+  }
+
+  // 判断 color 一方是否要赢了
+  function willWin(pattern, color) {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i * 3 + j] !== 0)
+          continue;
+
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = color;
+
+        return check(tmp, color) ? [i, j] : null;
+      }
+    }
+
+    return null;
+  }
+
+  // 计算最优走法
+  function bestChoice(pattern, color) {
+    let point = willWin(pattern, color);
+    if (point) {
+      return {
+        point,
+        result: 1
+      }
+    }
+
+    let result = -1;
+
+    outer: for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        // 该处不为空，跳过
+        if (pattern[i * 3 + j] !== 0)
+          continue;
+
+        let tmp = clone(pattern);
+        tmp[i * 3 + j] = color;
+        let opp = bestChoice(tmp, 3 - color);
+
+        if (-opp.result >= result) {
+          result = -opp.result;
+          point = [j, i];
+        }
+
+        if (result == 1) {
+          break outer;
+        }
+      }
+    }
+
+    return {
+      point,
+      result: point ? result : 0
+    }
+  }
+
+  show()
+
+</script>
+
+</html>

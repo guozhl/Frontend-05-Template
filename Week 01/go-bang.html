@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五子棋</title>
+
+  <style>
+    .cell {
+      width: 30px;
+      height: 30px;
+      background-color: grey;
+      margin-right: 1px;
+      margin-bottom: 1px;
+      border-radius: 1px;
+
+      display: inline-block;
+      line-height: 30px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="board"></div>
+</body>
+
+<script>
+  // 棋盘大小
+  const boardSize = 15;
+
+  // 棋子
+  let color = 1;
+
+  // 是否结束
+  let over = false;
+
+  // 初始化棋盘数组
+  let pattern = new Array(boardSize * boardSize).fill(0);
+
+  // 画棋盘
+  function show(pattern) {
+    let board = document.getElementById("board");
+
+    for (let i = 0; i < boardSize; i++) {
+      for (let j = 0; j < boardSize; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.classList.add(`item-${i * boardSize + j}`);
+        cell.innerText = pattern[i * boardSize + j] === 1 ? "⚪️" : pattern[i * boardSize + j] === 2 ? "⚫️" : "";
+        cell.addEventListener("click", () => userMove(j, i));
+
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("br"));
+    }
+  }
+
+  // 落子
+  function userMove(x, y) {
+
+    if (over) return;
+
+    if (pattern[y * boardSize + x] !== 0) return;
+
+    pattern[y * boardSize + x] = color;
+    let cellItem = document.getElementsByClassName(`item-${y * boardSize + x}`)[0];
+
+    // "⚪️" : "⚫️"
+    cellItem.innerText = color === 1 ? `${x},${y}` : `${x},${y}`;
+    if (check(pattern, color, [x, y])) {
+      over = true;
+      alert(color === 1 ? "⚪️ win!" : "⚫️ win!")
+    }
+
+    // 换对手颜色
+    color = 3 - color;
+
+  }
+
+  function check(pattern, color, coordinate) {
+
+    let [X, Y] = coordinate
+    let minX = X - 4 >= 0 ? X - 4 : 0;
+    let maxX = X + 4 <= 14 ? X + 4 : 14;
+    let minY = Y - 4 >= 0 ? Y - 4 : 0;
+    let maxY = Y + 4 <= 14 ? Y + 4 : 14;
+
+
+    console.log(coordinate, minX, minY, maxX, maxY)
+
+    // 横
+    {
+      let currentColor = 0;
+      for (let j = minX; j <= maxX; j++) {
+        currentColor = pattern[Y * boardSize + j] === color ? ++currentColor : 0;
+        if (currentColor > 4) return true;
+      }
+    }
+
+    // 竖
+    {
+      let currentColor = 0;
+      for (let i = minY; i <= maxY; i++) {
+        currentColor = pattern[i * boardSize + X] === color ? ++currentColor : 0;
+        if (currentColor > 4) return true;
+      }
+    }
+
+    // 左斜
+    // {
+    //   let currentColor = 0;
+    //   for (let i = minX; i < maxX; i++) {
+    //     console.log(i, minY, pattern[minY * boardSize + i], color)
+    //     currentColor = pattern[minY * boardSize + i] === color ? ++currentColor : 0;
+    //     minY++;
+    //     if (currentColor > 4) return true;
+    //   }
+    // }
+
+    // 右斜
+    {
+      let currentColor = 0;
+      for (let j = minX; j <= maxX; j++) {
+        // currentColor = pattern[i * boardSize + minY] === color ? ++currentColor : 0;
+        // minY++;
+        // if (currentColor > 4) return true;
+      }
+    }
+  }
+
+  show(pattern);
+
+</script>
+
+</html>

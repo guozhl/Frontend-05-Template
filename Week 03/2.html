@@ -1,0 +1,49 @@
+<script>
+  // 输入匹配规则
+  var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+
+  // 规则字典
+  var dictionary = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"]
+
+  function* tokenize(source) {
+    var result = null;
+    var lastIndex = 0;
+
+    while (true) {
+      lastIndex = regexp.lastIndex;
+      // console.log('lastIndex', lastIndex)
+
+      // 得到 regexp 的匹配内容，格式为数组
+      // 数组第 0 个匹配内容
+      // 后面相继为字典匹配内容
+      result = regexp.exec(source);
+      // console.log('result', result)
+
+      // 没匹配出来
+      if (!result) break;
+
+      // console.log('888', regexp.lastIndex, lastIndex)
+      // 匹配结果，如果长度超了，则表示有不认识的字符或格式
+      if (regexp.lastIndex - lastIndex > result[0].length) break;
+
+      let token = {
+        type: null,
+        value: null
+      }
+
+      for (var i = 1; i <= dictionary.length; i++) {
+        if (result[i]) {
+          token.type = dictionary[i - 1]
+        }
+      }
+      token.value = result[0];
+
+      yield token
+    }
+    yield { type: 'EOF' }
+  }
+
+  for (let token of tokenize("1024 + 10 * 25")) {
+    console.log(token)
+  }
+</script>

@@ -1,0 +1,88 @@
+<input id="r" type="range" min="0" max="255" />
+<input id="g" type="range" min="0" max="255" />
+<input id="b" type="range" min="0" max="255" />
+
+<div id="color" style="width: 100px; height: 100px;"></div>
+
+<script>
+  let callbacks = new Map();
+  let reactivties = new Map();
+
+  let usedReactivties = [];
+
+  let obj = {
+    r: 1,
+    g: 1,
+    b: 1
+  }
+
+  let po = reactive(obj);
+
+  effect(() => {
+    document.getElementById("r").value = po.r;
+  })
+  effect(() => {
+    document.getElementById("g").value = po.g;
+  })
+  effect(() => {
+    document.getElementById("b").value = po.b;
+  })
+
+  effect(() => {
+    document.getElementById("color").style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+  })
+
+  document.getElementById("r").addEventListener("input", event => po.r = event.target.value)
+  document.getElementById("g").addEventListener("input", event => po.g = event.target.value)
+  document.getElementById("b").addEventListener("input", event => po.b = event.target.value)
+
+  function effect(callback) {
+    usedReactivties = [];
+    callback();
+
+    for (let reactive of usedReactivties) {
+      if (!callbacks.has(reactive[0]))
+        callbacks.set(reactive[0], new Map());
+
+      if (!callbacks.get(reactive[0]).has(reactive[1]))
+        callbacks.get(reactive[0]).set(reactive[1], [])
+
+      callbacks.get(reactive[0]).get(reactive[1]).push(callback);
+    }
+  }
+
+  function reactive(object) {
+    if (reactivties.has(object))
+      return reactivties.get(object);
+
+    let proxy = new Proxy(object, {
+      set(obj, key, val) {
+        obj[key] = val;
+
+        if (callbacks.get(object))
+          if (callbacks.get(object).get(key))
+            for (let callback of callbacks.get(object).get(key)) {
+              callback();
+            }
+
+        return obj[key];
+      },
+
+      get(obj, key) {
+        usedReactivties.push([obj, key])
+
+        if (typeof obj[key] === "object")
+          return reactive(obj[key]);
+
+        return obj[key];
+      }
+    })
+
+    reactivties.set(object, proxy);
+
+    return proxy;
+  }
+  // po.a
+  // po.a = 5
+
+</script>

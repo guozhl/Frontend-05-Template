@@ -48,6 +48,7 @@
   文字 文字 文字 文字 文字 文字 文字 文字
   文字 文字 文字 文字 文字 文字 文字 文字
   文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字
 </div>
 
 <div id="dragable" style="display: inline-block; width: 100px; height: 100px; background-color: pink;"></div>
@@ -81,6 +82,7 @@
 
   let container = document.getElementById("container");
 
+  // 给 container 设置多个 range
   for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
     let range = document.createRange();
 
@@ -95,6 +97,7 @@
     let nearst = null;
 
     for (let range of ranges) {
+      // getBoundingClientRect 返回元素的大小及其相对于视口的位置。
       let rect = range.getBoundingClientRect();
       let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2;
 

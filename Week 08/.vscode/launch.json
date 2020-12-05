@@ -12,7 +12,7 @@
       "type": "pwa-node",
       "name": "Run Current File",
       "request": "launch",
-      "program": "${workspaceFolder}/client.js"
+      "program": "${workspaceFolder}/toy-browser/client.js"
     }
   ]
 }

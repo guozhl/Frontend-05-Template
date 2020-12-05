@@ -9,6 +9,7 @@ class Request {
     this.body = options.body || {};
     this.headers = options.headers || {};
 
+    // headers 添加默认的 Content-Type 属性
     if (!this.headers['Content-Type']) {
       this.headers['Content-Type'] = "application/x-www-form-urlencoded";
     }
@@ -18,17 +19,18 @@ class Request {
     } else if (this.headers['Content-Type'] === "application/x-www-form-urlencoded") {
       this.bodyText = Object.keys(this.body)
         .map(key => `${key}=${encodeURIComponent(this.body[key])}`)
-        .join("$");
+        .join("&");
     }
 
+    // headers 添加 Content-Length 属性
     this.headers["Content-Length"] = this.bodyText.length;
   }
 
   toString () {
-    return `${this.method} ${this.path} HTTP/1.1\r 
-    ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
-    \r
-    ${this.bodyText}`;
+    return `${this.method} ${this.path} HTTP/1.1\r
+${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
+\r
+${this.bodyText}`;
   }
 
   send (connection) {
@@ -39,8 +41,9 @@ class Request {
       } else {
         connection = net.createConnection({
           host: this.host,
-          port: this.post
+          port: this.port
         }, () => {
+          console.log(this.toString())
           connection.write(this.toString());
         })
       }
@@ -83,9 +86,9 @@ class ResponseParser {
     this.bodyParser = null;
   }
 
-  get isFinished () {
-    return this.bodyParser && this.bodyParser.isFinished;
-  }
+    get isFinished () {
+      return this.bodyParser && this.bodyParser.isFinished;
+    }
 
   get response () {
     this.statusLine.match(/HTTP\/1.1 ([0-9]+) ([\s\S]+)/);
@@ -151,12 +154,12 @@ class ResponseParser {
   }
 }
 
-void (async function () {
+void async function () {
   let request = new Request({
-    method: 'POST',
-    host: '127.0.0.1',
-    port: '8088',
-    path: '/',
+    method: 'POST',  // HTTP
+    host: '127.0.0.1',  // ip
+    port: '8088',  // tcp
+    path: '/',  // HTTP
     headers: {
       ['X-Foo2']: 'customed'
     },
@@ -168,7 +171,7 @@ void (async function () {
   let response = await request.send();
 
   console.log(response);
-})()
+}();
 
 class TrunkedBodyParser {
   constructor() {

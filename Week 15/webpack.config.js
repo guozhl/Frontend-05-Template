@@ -1,5 +1,6 @@
 module.exports = {
-  entry: './main.js',
+  // entry: './main.js',
+  entry: './animation-demo.js'
   module: {
     rules: [
       {
@@ -14,5 +15,8 @@ module.exports = {
       }
     ]
   },
+  // devServer: {
+	// 	contentBase: "./dist",
+	// },
   mode: "development"
 }

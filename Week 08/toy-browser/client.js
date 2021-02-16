@@ -1,6 +1,7 @@
 const net = require('net');
 
 class Request {
+  // 收集请求头信息
   constructor(options) {
     this.method = options.method || 'GET';
     this.host = options.host;
@@ -17,15 +18,14 @@ class Request {
     if (this.headers['Content-Type'] === "application/json") {
       this.bodyText = JSON.stringify(this.body);
     } else if (this.headers['Content-Type'] === "application/x-www-form-urlencoded") {
-      this.bodyText = Object.keys(this.body)
-        .map(key => `${key}=${encodeURIComponent(this.body[key])}`)
-        .join("&");
+      this.bodyText = Object.keys(this.body).map(key => `${key}=${encodeURIComponent(this.body[key])}`).join("&");
     }
 
     // headers 添加 Content-Length 属性
     this.headers["Content-Length"] = this.bodyText.length;
   }
 
+  // 请求头格式
   toString () {
     return `${this.method} ${this.path} HTTP/1.1\r
 ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\n')}\r
@@ -33,9 +33,12 @@ ${Object.keys(this.headers).map(key => `${key}: ${this.headers[key]}`).join('\r\
 ${this.bodyText}`;
   }
 
+  // 发送请求
   send (connection) {
     return new Promise((reslove, reject) => {
-      const parser = new ResponseParser();
+      // 逐步收到response
+      const parser = new ResponseParser;
+      // 支持已有的 connection 或新建 connection
       if (connection) {
         connection.write(this.toString());
       } else {
@@ -43,7 +46,6 @@ ${this.bodyText}`;
           host: this.host,
           port: this.port
         }, () => {
-          console.log(this.toString())
           connection.write(this.toString());
         })
       }
@@ -53,6 +55,7 @@ ${this.bodyText}`;
         parser.receive(data.toString());
         if (parser.isFinished) {
           reslove(parser.response);
+          // 关掉 connection
           connection.end();
         }
       })
@@ -63,19 +66,26 @@ ${this.bodyText}`;
       })
     })
   }
-
-
 }
 
+// 逐步接收response文本，进行分析
 class ResponseParser {
   constructor() {
+    // \r
     this.WAITING_STATUS_LINE = 0;
+    // \n
     this.WAITING_STATUS_LINE_END = 1;
+    // header_name
     this.WAITING_HEADER_NAME = 2;
+    // header_name 后面的空格
     this.WAITING_HEADER_SPACE = 3;
+    // header_value
     this.WAITING_HEADER_VALUE = 4;
+    // header_end
     this.WAITING_HEADER_LINE_END = 5;
+    // header 后的空行
     this.WAITING_HEADER_BLOCK_END = 6;
+    // body
     this.WAITING_BODY = 7;
 
     this.current = this.WAITING_STATUS_LINE;
@@ -86,9 +96,9 @@ class ResponseParser {
     this.bodyParser = null;
   }
 
-    get isFinished () {
-      return this.bodyParser && this.bodyParser.isFinished;
-    }
+  get isFinished () {
+    return this.bodyParser && this.bodyParser.isFinished;
+  }
 
   get response () {
     this.statusLine.match(/HTTP\/1.1 ([0-9]+) ([\s\S]+)/);
@@ -106,32 +116,44 @@ class ResponseParser {
     }
   }
 
+  // 状态机
   receiveChar (char) {
+    // 开始处理 request line ----- POST /HTTP/1.1\r\n
     if (this.current === this.WAITING_STATUS_LINE) {
+      // 处理 \r
       if (char === '\r') {
         this.current = this.WAITING_STATUS_LINE_END;
       } else {
         this.statusLine += char;
       }
     } else if (this.current === this.WAITING_STATUS_LINE_END) {
+      // 处理 \n
       if (char === '\n') {
         this.current = this.WAITING_HEADER_NAME;
       }
     } else if (this.current === this.WAITING_HEADER_NAME) {
+      // 开始处理 headers ----- key: value
       if (char === ':') {
+        // 遇到字符是 :
         this.current = this.WAITING_HEADER_SPACE;
       } else if (char === '\r') {
+        // 两种情况：1. 没有 headers，直接到空行
+        // 2. headers结束
         this.current = this.WAITING_HEADER_BLOCK_END;
+        // body 和 header 相关，由 header 决定应该如何处理 body 内容
+        // 举例 chunked
         if (this.headers['Transfer-Encoding'] === 'chunked')
           this.bodyParser = new TrunkedBodyParser();
       } else {
         this.headerName += char;
       }
     } else if (this.current === this.WAITING_HEADER_SPACE) {
+      // 处理 空格 ' '
       if (char === ' ') {
         this.current = this.WAITING_HEADER_VALUE;
       }
     } else if (this.current === this.WAITING_HEADER_VALUE) {
+      // 处理 value
       if (char === '\r') {
         this.current = this.WAITING_HEADER_LINE_END;
         this.headers[this.headerName] = this.headerValue;
@@ -149,6 +171,7 @@ class ResponseParser {
         this.current = this.WAITING_BODY;
       }
     } else if (this.current === this.WAITING_BODY) {
+      // 接收 body 字符
       this.bodyParser.receiveChar(char);
     }
   }

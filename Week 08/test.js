@@ -1,4 +1,0 @@
-let bb = new Buffer('宝宝')
-// console.log(bb)
-
-console.log(new Buffer([0xe5, 0xae, 0x9d, 0xe5, 0xae, 0x9d]))

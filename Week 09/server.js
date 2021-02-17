@@ -15,11 +15,9 @@ http.createServer((request, response) => {
     response.end(`<html lang="en">
 
     <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>toy-browser</title>
+    <title>toy-browser</title>
     </head>
-    
+
     <style>
       body div #myid {
         width: 100px;
@@ -45,4 +43,3 @@ http.createServer((request, response) => {
 }).listen(8088);
 
 console.log("server started")
- 

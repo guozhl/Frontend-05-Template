@@ -88,7 +88,7 @@ archive.pipe(request);
 ## 用GitHub oAuth做一个登录实例
 不想学啦累死啦
 
-为什么还不显示绿格子呢
+为什么还还不显示绿格子呢
 
 ## 参考文档
 node 流式传输 参考链接：https://nodejs.org/docs/latest-v13.x/api/stream.html#stream_class_stream_readable

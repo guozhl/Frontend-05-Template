@@ -93,7 +93,6 @@ archive.pipe(request);
 
 
 ## 参考文档
-node 流式传输 参考链接：https://nodejs.org/docs/latest-v13.x/api/stream.html#stream_class_stream_readable
-
-https://docs.github.com/en/developers/apps/getting-started-with-apps
+1. [node 流式传输](https://nodejs.org/docs/latest-v13.x/api/stream.html#stream_class_stream_readable)
+2. [用GitHub oAuth做一个登录实例](https://docs.github.com/en/developers/apps/getting-started-with-apps)
 

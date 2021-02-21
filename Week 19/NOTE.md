@@ -86,10 +86,14 @@ archive.pipe(request);
 ```
 
 ## 用GitHub oAuth做一个登录实例
-不想学啦累死啦
+1. 打开 https://github.com/login/oauth/authorize  - publish-tool
+2. auth 路由：接收 code，用 code + client_id + client_secret 换 token  - publish-server
+3. 创建 server，接受 token，后点击发布  - publish-tool
+4. publish 路由：用 token 获取用户信息，检查权限，接受发布  - publish-server
 
-为什么还还不显示绿格子呢
 
 ## 参考文档
 node 流式传输 参考链接：https://nodejs.org/docs/latest-v13.x/api/stream.html#stream_class_stream_readable
+
+https://docs.github.com/en/developers/apps/getting-started-with-apps
 
